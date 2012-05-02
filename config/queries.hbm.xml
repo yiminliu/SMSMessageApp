@@ -13,4 +13,11 @@
 			</return>
 			{ call tscp_woms_pkg.sp_get_marketing_sms(?) }
 	</sql-query>
+	<sql-query name="get_activation_sms" callable="true">
+			<return class="com.tscp.mvno.smpp.domain.ActivationAlertMessage">
+				<return-property name="externalId" column="external_id"/>
+				<return-property name="smsMsg" column="text_message"/>						
+			</return>
+			{ call etc_tscp_woms_pkg.sp_new_activations_text_alert(?) }
+	</sql-query>
 </hibernate-mapping>
