@@ -62,9 +62,8 @@ public class SMSMessageManager {
     		if(iniliazed == false) 
     		   messageManager.init();    
     		//logger.trace("********** Start SMSMessageManager ***********");        
-    		messageManager.doWork();    		
-    		//logger.trace("********** CleanUp **********");    	    
-    	    //messageManager.cleanUp();   
+    		messageManager.doWork();   			    
+    	    messageManager.cleanUp();   
     	}
     	catch(Throwable t){
     		t.printStackTrace();
@@ -99,7 +98,8 @@ public class SMSMessageManager {
 		List<SMSMessage> msgList = null;
 		try {            
       		logger.trace("********** Get message list ***********");
-    		msgList =getMessageList(messageType);
+    		msgList = getMessageList(messageType);
+    		
     	    logger.trace("********** Process the messages ********");
     	    processMessage(msgList);
       	}
@@ -111,21 +111,8 @@ public class SMSMessageManager {
 	
     private List<SMSMessage> getMessageList(AlertAction messageType) throws Exception {
 		
-		List<SMSMessage> messageList = null;
+		List<SMSMessage> messageList = dbService.getSMSMessageList(messageType);
 		
-		switch (messageType ) {
-		case MESSAGE_TYPE_PROM_CAPABILITY:
-			messageList = dbService.getSMSMessageList(messageType);
-			break; 	
-		/*case SMSMessageProcessor.MESSAGE_TYPE_ACTIVATION:
-			getActivationMessageList(messageList);
-			break;
-		case SMSMessageProcessor.MESSAGE_TYPE_TEST_SMS:
-			getTestMessageList(messageList);
-			break;
-		*/default:
-			messageList = null;
-		}		
 		logger.info("SMS List returned with "+messageList.size()+" elements.");
 	
 		return messageList;
@@ -135,10 +122,8 @@ public class SMSMessageManager {
 		String messageId = null;				
 		int messageSentCounter = 0;		
 	    try { 
-		    //for( int j = 0; j < smsList.size(); j++ ) {
-		    for( int j = 0; j < 2; j++ ) {
-			    //logger.info("Preparing message for MDN: "+smsList.get(j).getDestination().getAddress()+" with Message: "+smsList.get(j).getMessageText());
-			    //String messageBlockingSOC = "";
+		    for( int j = 0; j < smsList.size(); j++ ) {
+		        //String messageBlockingSOC = "";
 				try {
 			    	if(!smppConnection.isBound()){ // smpp connection is unbound, need to bind
 				       SMPPService.bind(smppConnection);
@@ -170,8 +155,9 @@ public class SMSMessageManager {
 			ie.omk.smpp.Address destAddress = new ie.omk.smpp.Address();
 			ie.omk.smpp.Address sendAddress = new ie.omk.smpp.Address();
 			
-			//destAddress.setAddress(phoneNumber);
-			destAddress.setAddress("2132566431");			
+			destAddress.setAddress(phoneNumber);
+			//for test
+			//destAddress.setAddress("2132566431");			
 			sendAddress.setTON(0);
 			sendAddress.setNPI(0);
 			sendAddress.setAddress(SMPPService.getShortCode());
@@ -208,6 +194,7 @@ public class SMSMessageManager {
 	
 	//@PreDestroy
     private void cleanUp() {
+    	logger.trace("********** CleanUp **********");    
 		SMPPService.releaseConnection(smppConnection);
 	}	
 }

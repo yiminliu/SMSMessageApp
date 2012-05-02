@@ -1,48 +1,42 @@
 package com.tscp.mvno.smpp.dao;
 
-import ie.omk.smpp.message.SubmitSM;
 
-import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tscp.mvno.smpp.domain.SMSMessage;
-//import com.tscp.mvno.smpp.util.HibernateUtil;
+
 
 @Repository
+@Scope("singleton")
 public class SmsDao extends HibernateDaoSupport {
 
-	public SmsDao(){
-	}
-	
+	public SmsDao(){}	
 	
     @Autowired
 	public void init(HibernateTemplate hibernateTemplate) {
 	   setHibernateTemplate(hibernateTemplate);
-    }
+    } 
     
-    //@Autowired
-    //public void init(SessionFactory sessionFactory) {
-	//   setSessionFactory(sessionFactory);
-    //}
-	
-	@Autowired
-	SessionFactory sessionFactory;
-	
+	@Transactional(readOnly=true)
+	public List<SMSMessage> getAlertMessages(String namedQueryName){
 		
+		   List<SMSMessage> messageList = null;	  
+		
+		   HibernateTemplate ht = getHibernateTemplate();
+		
+		   messageList = (List<SMSMessage>)ht.findByNamedQuery(namedQueryName);
+		   
+		   return messageList;
+	}
+		
+	
 	/* used with pure Hibernate
 	public List<SMSMessage> getPromAlertMessages(){
 				
@@ -69,16 +63,4 @@ public class SmsDao extends HibernateDaoSupport {
 	   return messageList;
 	}	
 	*/
-	@Transactional(readOnly=true)
-	public List<SMSMessage> getPromAlertMessages(){
-		
-		   List<SMSMessage> messageList = null;	  
-		
-		   HibernateTemplate ht = getHibernateTemplate();
-		
-		   messageList = (List<SMSMessage>)ht.findByNamedQuery("get_marketing_sms");
-		   
-		   return messageList;
-		}
-			
 }

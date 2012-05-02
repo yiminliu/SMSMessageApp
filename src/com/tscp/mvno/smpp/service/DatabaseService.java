@@ -3,93 +3,61 @@ package com.tscp.mvno.smpp.service;
 import ie.omk.smpp.Address;
 import ie.omk.smpp.message.SubmitSM;
 
-import java.sql.Connection;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.tscp.mvno.smpp.AlertAction;
 import com.tscp.mvno.smpp.dao.SmsDao;
-import com.tscp.mvno.smpp.domain.PromAlertMessage;
 import com.tscp.mvno.smpp.domain.SMSMessage;
 
-@Service
+@Service()
+@Scope("singleton")
 public class DatabaseService {
 
-    private Connection conn;
-         
     @Autowired
     private SmsDao smsDao;  
     @Autowired
-    private static LoggingService logger;
+    private LoggingService logger;
     
-    public DatabaseService(){
-       	init();
-    }
-    
-    private void init() {
-    	
-    	logger = new LoggingService();
-    	 smsDao = new SmsDao();  
-    }   
-    
+    public DatabaseService(){}
+       
     public List<SMSMessage> getSMSMessageList(AlertAction messageType) throws Exception {
 		
     	List<SMSMessage> messageList = null;
     		
 		switch ( messageType ) {
 		  case MESSAGE_TYPE_PROM_CAPABILITY:
-			  messageList = smsDao.getPromAlertMessages();
-			  //messageList = processList(origList);			
+			  messageList = smsDao.getAlertMessages("get_marketing_sms");
 		  break; 	
+		  
+		  case MESSAGE_TYPE_ACTIVATION:
+			  messageList = smsDao.getAlertMessages("etc_tscp_woms_pkg.sp_new_activations_text_alert");
+		  break;
 			
 		  default:
 			  messageList = null;			
 		}
 		return messageList;
     }
-    
-    private List<SubmitSM> processList(List<PromAlertMessage> origList){
-    
-    	List<SubmitSM> newList = new ArrayList<SubmitSM>();
-   
-    	try {
-    	  for(PromAlertMessage pa : origList){
-        	SubmitSM shortMessage = new SubmitSM();
-			Address address = new Address();
-			address.setAddress(pa.getExternalId());
-			shortMessage.setDestination(address);
-			shortMessage.setMessageText(pa.getSmsMsg());
-			newList.add(shortMessage);
-    	  }
-    	}
-    	catch(Exception e){
-    		e.printStackTrace();
-    	}    	
-    	return newList;
-    }	        
         
     private void initForTest() {
     	
     	ApplicationContext appCtx = new ClassPathXmlApplicationContext("application-context.xml");
     	smsDao = (SmsDao)appCtx.getBean("smsDao");
+    	logger = (LoggingService)appCtx.getBean("loggingService");
     }    
     
     public static void main(String[] args) { 
-    	
-    	//ApplicationContext appCtx = new ClassPathXmlApplicationContext("application-context.xml");
-    	//promAlertDao = (PromAlertDao)appCtx.getBean("promAlertDao");
-        	
+    	    	  	
     	DatabaseService ds = new DatabaseService();
-    	ds.init();//ForTest();
-    	//logger.info("Testing SMPP Project ConnectionInfo class....");
+    	ds.initForTest();
+    	System.out.println("Testing SMPP Project ConnectionInfo class....");
     	
         try{
         	List<SMSMessage> list = ds.getSMSMessageList(AlertAction.MESSAGE_TYPE_PROM_CAPABILITY);
@@ -97,8 +65,8 @@ public class DatabaseService {
     	}
 	    catch(Exception e){
 		    e.printStackTrace();
-		    //logger.error("Error occured while creating connection, due to : " + e.getMessage());
+		    System.out.println("Error occured while creating connection, due to : " + e.getMessage());
 	    }	   
-    	//logger.info("Done Testing SMPP Project ConnectionInfo Class.");
+	    System.out.println("Done Testing SMPP Project ConnectionInfo Class.");
     }    
 }
