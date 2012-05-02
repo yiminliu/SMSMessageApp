@@ -29,23 +29,24 @@ public class DatabaseService {
        
     public List<SMSMessage> getSMSMessageList(AlertAction messageType) throws Exception {
 		
-    	List<SMSMessage> messageList = null;
-    		
+    	return smsDao.getAlertMessages(messageType.getActionProcedureName());
+    }	
+    	/*	
 		switch ( messageType ) {
 		  case MESSAGE_TYPE_PROM_CAPABILITY:
+			  //messageList = smsDao.getAlertMessages("get_marketing_sms");
 			  messageList = smsDao.getAlertMessages("get_marketing_sms");
 		  break; 	
 		  
 		  case MESSAGE_TYPE_ACTIVATION:
-			  messageList = smsDao.getAlertMessages("etc_tscp_woms_pkg.sp_new_activations_text_alert");
+			  messageList = smsDao.getAlertMessages("get_activation_sms");
 		  break;
 			
 		  default:
 			  messageList = null;			
 		}
-		return messageList;
-    }
-        
+		*/		
+            
     private void initForTest() {
     	
     	ApplicationContext appCtx = new ClassPathXmlApplicationContext("application-context.xml");

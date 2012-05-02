@@ -21,15 +21,13 @@ import com.tscp.mvno.smpp.service.LoggingService;
 import com.tscp.mvno.smpp.service.MessageSupportService;
 import com.tscp.mvno.smpp.service.SMPPService;
 
+
 @Component
 public class SMSMessageManager {
-		
-	private static final AlertAction defaultMessageType = AlertAction.MESSAGE_TYPE_PROM_CAPABILITY;
-	
+			
 	private static boolean iniliazed = false;
-	
-	//@Autowired
-	private static AlertAction messageType;
+		
+	private AlertAction messageType;
 	
 	@Autowired
 	private DatabaseService	dbService;	
@@ -48,30 +46,35 @@ public class SMSMessageManager {
 	public SMSMessageManager(AlertAction messageType) {
 		this.messageType = messageType;
 	}
-
+	
     public static void main(String[] args) { 
-          	
-    	if(args != null && args.length > 0)
-    	   messageType = AlertAction.valueOf(args[0]);
-    	else
-    	   messageType = defaultMessageType;
     	
-    	SMSMessageManager messageManager = new SMSMessageManager(messageType);
-    	   	    	    	    	
-    	try {             
+    	System.out.println("********** Start SMPP MessageProcessor *********");
+    	   	
+    	if (args.length != 1) {
+            System.err.println("Usage: java SMSMessageManager actionCode");
+            System.out.println("Exit the process");
+            System.exit(-1);
+        }
+    	   	    	
+    	try {       
+    		
+    		SMSMessageManager messageManager = new SMSMessageManager(determineAction(args));
+    		
     		if(iniliazed == false) 
     		   messageManager.init();    
-    		//logger.trace("********** Start SMSMessageManager ***********");        
+    	
     		messageManager.doWork();   			    
-    	    messageManager.cleanUp();   
+    	    
+    		messageManager.cleanUp();   
     	}
     	catch(Throwable t){
     		t.printStackTrace();
-    		//logger.error("Exit the process due to an exception occured : " + t.getMessage());
+    		System.out.println("Exit the process due to an exception occured : " + t.getMessage());
     	    System.exit(1);	
     	}
-    	//logger.trace("********** Done SMPP MessageProcessor *********");
-    	//logger.trace("**********************************************");
+    	System.out.println("********** Done SMPP MessageProcessor *********");
+    	System.out.println("**********************************************");
     	System.exit(0);
     }
 
@@ -191,6 +194,34 @@ public class SMSMessageManager {
 		}
 		return retValue;
 	}
+	
+	private static AlertAction determineAction(String args[]) throws Exception{
+		int code = -1;
+		AlertAction type = null;
+		
+		if(args != null && args.length > 0){  	
+		   try{	
+		       code = Integer.parseInt(args[0]);
+		   }
+		   catch(NumberFormatException nfe){
+			   throw new Exception("NumberFormatException occured processing input action code: " + nfe.getMessage());
+		   }
+		   
+		   switch(code) {
+		      case 100:
+			      type = AlertAction.MESSAGE_TYPE_ACTIVATION;
+		      break;
+		   
+		      case 110:
+			      type = AlertAction.MESSAGE_TYPE_PROM_CAPABILITY;
+		      break;
+		      default:
+		    	  throw new Exception("Error with the input action code: " + args[0] +", Please input a valid numeric value as the action code");
+		   }	   
+		}  		
+		return type;
+	}
+	
 	
 	//@PreDestroy
     private void cleanUp() {

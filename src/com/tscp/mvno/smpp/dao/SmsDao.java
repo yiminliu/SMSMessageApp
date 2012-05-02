@@ -15,6 +15,7 @@ import com.tscp.mvno.smpp.domain.SMSMessage;
 
 @Repository
 @Scope("singleton")
+@Transactional
 public class SmsDao extends HibernateDaoSupport {
 
 	public SmsDao(){}	
