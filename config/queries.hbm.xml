@@ -1,0 +1,16 @@
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+        
+<hibernate-mapping package="com.tscp.mvno.smpp">
+	<sql-query name="get_marketing_sms" callable="true">
+			<return class="com.tscp.mvno.smpp.domain.PromAlertMessage">
+				<return-property name="accountNo" column="account_no"/>	
+				<return-property name="accountCategory" column="account_category"/>
+				<return-property name="externalId" column="external_id"/>
+				<return-property name="languageCode" column="language_code"/>
+				<return-property name="smsMsg" column="sms_msg"/>						
+			</return>
+			{ call tscp_woms_pkg.sp_get_marketing_sms(?) }
+	</sql-query>
+</hibernate-mapping>

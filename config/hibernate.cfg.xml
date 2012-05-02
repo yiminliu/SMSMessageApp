@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+  <session-factory name="java:comp/env/hibernate/SessionFactory">
+   <!--<session-factory name="HibernateSessionFactory">-->
+    <property name="connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
+    <property name="connection.url">jdbc:oracle:thin:@uscael200:1521:K11MVNOT</property>
+    <!-- <property name="connection.url">jdbc:oracle:thin:@USCAELMUX18:1521:K11MVNO</property>-->
+    <property name="connection.username">REPORT</property>
+    <property name="connection.password">REPORTMVNO</property>
+    
+    <!-- SQL dialect -->
+    <property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
+    
+    <!-- Connection Pooling -->
+    <property name="c3p0.acquire_increment">1</property>    
+    <property name="c3p0.min_size">1</property>
+    <property name="c3p0.max_size">10</property>
+    <property name="c3p0.timeout">100</property> <!-- seconds --> 
+    <!-- <property name="c3p0.idle_test_period">100</property>--> <!-- seconds -->  
+    
+    <!-- Enable Hibernate's automatic session context management -->
+    <property name="current_session_context_class">thread</property>
+    
+    <!-- Echo all executed SQL to stdout -->
+    <property name="show_sql">true</property>
+    <!-- Drop and re-create the database schema on startup -->
+    <!--<property name="hbm2ddl.auto">update</property> -->
+    
+    <!--  Mapping resources --> 
+    <mapping resource = "queries.hbm.xml" />
+  </session-factory>
+</hibernate-configuration>
