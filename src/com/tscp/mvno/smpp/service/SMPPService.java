@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
  *
  */
 
-@Service
+@Service("smppService")
 public class SMPPService {
  
 public static String inputProperties = "client.properties";
@@ -46,12 +46,10 @@ public static String inputProperties = "client.properties";
 			   props.load(in);
 			}
 			
-			sprintSmscSite 		= props.getProperty("SMSC.URL", "http://68.28.216.140/");
-		    //sprintSmscSite 		= props.getProperty("SMSC.URL", "http://63.168.232.135/");
+			//sprintSmscSite 		= props.getProperty("SMSC.URL", "http://68.28.216.140/");
+			//for test
 			sprintSmscSite 		= props.getProperty("SMSC.URL", "63.168.232.135");
 		    sprintSmscPort 		= Integer.parseInt(props.getProperty("SMSC.PORT", "16910"));
-		   
-		    //sprintSmscPort 		= Integer.parseInt(props.getProperty("SMSC.PORT", "80"));
 		    telscapeUserName	= props.getProperty("TSCP.USERNAME", "tscp");
 		    telscapePassword	= props.getProperty("TSCP.PASSWORD", "tscp2008");
 		    systemType			= props.getProperty("SYSTEM.TYPE", "systype");
@@ -62,7 +60,7 @@ public static String inputProperties = "client.properties";
 		}
 	}
 	
-	public static Connection makeConnection() throws UnknownHostException, Exception{
+	public Connection makeConnection() throws UnknownHostException, Exception{
 				
 		TcpLink		tcpLink = null;
 		Connection 	smppConnection = null;
@@ -195,8 +193,9 @@ public static String inputProperties = "client.properties";
 		logger.info("Testing ConnectionUtil for SMPP project...");
 				
 		//ConnectionUtil connection = new ConnectionUtil();
+		SMPPService ss = new SMPPService();
 		try {
-		  makeConnection();
+		  ss.makeConnection();
 		}
 		catch(Exception e){
 			e.printStackTrace();
