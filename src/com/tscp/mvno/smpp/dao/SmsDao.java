@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tscp.mvno.smpp.domain.SMSMessage;
+import com.tscp.mvno.smpp.service.LoggingService;
 
 
 @Repository
@@ -18,13 +19,15 @@ import com.tscp.mvno.smpp.domain.SMSMessage;
 @Transactional
 public class SmsDao extends HibernateDaoSupport {
 
-	public SmsDao(){}	
-	
-    @Autowired
+	@Autowired
+	private LoggingService logger;
+	@Autowired
 	public void init(HibernateTemplate hibernateTemplate) {
 	   setHibernateTemplate(hibernateTemplate);
     } 
     
+	public SmsDao(){}
+	
 	@Transactional(readOnly=true)
 	public List<SMSMessage> getAlertMessages(String namedQueryName){
 		
@@ -33,6 +36,8 @@ public class SmsDao extends HibernateDaoSupport {
 		   HibernateTemplate ht = getHibernateTemplate();
 		
 		   messageList = (List<SMSMessage>)ht.findByNamedQuery(namedQueryName);
+		   
+		   logger.info("SMS List returned with "+messageList.size()+" elements.");
 		   
 		   return messageList;
 	}

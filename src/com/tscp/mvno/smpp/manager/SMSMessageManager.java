@@ -57,8 +57,7 @@ public class SMSMessageManager {
             System.exit(-1);
         }
     	   	    	
-    	try {       
-    		
+    	try {           		
     		SMSMessageManager messageManager = new SMSMessageManager(determineAction(args));
     		
     		if(iniliazed == false) 
@@ -114,11 +113,7 @@ public class SMSMessageManager {
 	
     private List<SMSMessage> getMessageList(AlertAction messageType) throws Exception {
 		
-		List<SMSMessage> messageList = dbService.getSMSMessageList(messageType);
-		
-		logger.info("SMS List returned with "+messageList.size()+" elements.");
-	
-		return messageList;
+		return dbService.getSMSMessageList(messageType);		
 	}
 
    public void processMessage(List<SMSMessage> smsList) throws Exception{			
@@ -194,12 +189,12 @@ public class SMSMessageManager {
 		}
 		return retValue;
 	}
-	
+		
 	private static AlertAction determineAction(String args[]) throws Exception{
 		int code = -1;
 		AlertAction type = null;
 		
-		if(args != null && args.length > 0){  	
+		if(args != null && args.length > 0){ 		
 		   try{	
 		       code = Integer.parseInt(args[0]);
 		   }
@@ -207,21 +202,18 @@ public class SMSMessageManager {
 			   throw new Exception("NumberFormatException occured processing input action code: " + nfe.getMessage());
 		   }
 		   
-		   switch(code) {
-		      case 100:
-			      type = AlertAction.MESSAGE_TYPE_ACTIVATION;
-		      break;
-		   
-		      case 110:
-			      type = AlertAction.MESSAGE_TYPE_PROM_CAPABILITY;
-		      break;
-		      default:
-		    	  throw new Exception("Error with the input action code: " + args[0] +", Please input a valid numeric value as the action code");
-		   }	   
-		}  		
-		return type;
-	}
-	
+		   for(AlertAction aa : AlertAction.values()){
+			   if(code == aa.getActionCode()) {
+			      type = aa;	
+			      break;
+			   }   
+		   }
+		}  
+		 if(type == null)
+		      throw new Exception("Error with the input action code: " + args[0] +", Please enter a valid numeric value as the action code");
+		 else
+		     return type;
+	}	
 	
 	//@PreDestroy
     private void cleanUp() {
