@@ -18,7 +18,6 @@ import com.tscp.mvno.smpp.AlertAction;
 import com.tscp.mvno.smpp.domain.SMSMessage;
 import com.tscp.mvno.smpp.service.DatabaseService;
 import com.tscp.mvno.smpp.service.LoggingService;
-import com.tscp.mvno.smpp.service.MessageSupportService;
 import com.tscp.mvno.smpp.service.SMPPService;
 
 
@@ -35,9 +34,7 @@ public class SMSMessageManager {
 	private SMPPService smppService;
 	@Autowired
 	private LoggingService logger;
-	@Autowired
-	private MessageSupportService messageSupportService;
-
+	
 	private Connection smppConnection;
 			
 	public SMSMessageManager() {
@@ -83,13 +80,11 @@ public class SMSMessageManager {
 		try{
 		    ApplicationContext appCtx = new ClassPathXmlApplicationContext("application-context.xml");		    
 		    dbService = (DatabaseService)appCtx.getBean("databaseService");	
-		    smppService = (SMPPService)appCtx.getBean("SMPPService");
+		    smppService = (SMPPService)appCtx.getBean("smppService");
 		    logger = (LoggingService)appCtx.getBean("loggingService");
-			messageSupportService = (MessageSupportService) appCtx.getBean("messageSupportService");
-		    smppConnection = SMPPService.makeConnection();
+		    smppConnection = smppService.makeConnection();
 		}
 		catch(Exception e){
-			e.printStackTrace();
 			logger.error("Error occured while initializing connections, due to: " + e.getMessage());
 	        throw e;
 		}		
