@@ -6,33 +6,21 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.xml.DOMConfigurator;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 
-//@SuppressWarnings("all")
+@SuppressWarnings("all")
 @Service
 public class LoggingService {
 	
-	public static String inputProperties = "logConfig.properties";
-	
 	private static Log		 logger = LogFactory.getLog("");
-	private static String	 logConfigFile= null;//"log4j.xml";
+	private static final String	 logConfigFile = "config/log4j.xml";
 	
 	static{
 		try {
-			Properties props = new Properties();
-			ClassLoader cl = LoggingService.class.getClassLoader();
-			
-			InputStream in = cl.getResourceAsStream(inputProperties);						
-			if(in != null) {
-			   props.load(in);
-			}			
-			logConfigFile 		= props.getProperty("fileName", "config/log4j.xml");
-			//logConfigFile 		= "./conf/log4j.xml";
-			
 			DOMConfigurator.configure(logConfigFile);
-		} catch( Exception e ) {
+		} 
+		catch( Exception e ) {
 			logger.error("Error loading properties file!! due to: " + e.getMessage());			
 		}
 	}	
