@@ -21,11 +21,8 @@ import com.tscp.mvno.smpp.service.LoggingService;
 import com.tscp.mvno.smpp.service.SMPPService;
 
 
-@Component
 public class SMSMessageManager {
-			
-	private static boolean iniliazed = false;
-		
+	
 	private AlertAction messageType;
 	
 	@Autowired
@@ -37,44 +34,18 @@ public class SMSMessageManager {
 	
 	private Connection smppConnection;
 			
-	public SMSMessageManager() {
+	public SMSMessageManager() {		
 	}
 	
 	public SMSMessageManager(AlertAction messageType) {
 		this.messageType = messageType;
 	}
-	
-    public static void main(String[] args) { 
-    	
-    	System.out.println("********** Start SMPP MessageProcessor *********");
-    	   	
-    	if (args.length != 1) {
-            System.err.println("Usage: java SMSMessageManager actionCode");
-            System.out.println("Exit the process");
-            System.exit(-1);
-        }
-    	   	    	
-    	try {           		
-    		SMSMessageManager messageManager = new SMSMessageManager(determineAction(args));
-    		
-    		if(iniliazed == false) 
-    		   messageManager.init();    
-    	
-    		messageManager.doWork();   			    
-    	    
-    		messageManager.cleanUp();   
-    	}
-    	catch(Throwable t){
-    		t.printStackTrace();
-    		System.out.println("Exit the process due to an exception occured : " + t.getMessage());
-    	    System.exit(1);	
-    	}
-    	System.out.println("********** Done SMPP MessageProcessor *********");
-    	System.out.println("**********************************************");
-    	System.exit(0);
-    }
-
-    //@PostConstruct    
+		
+	public void setMessageType(AlertAction messageType) {
+		this.messageType = messageType;
+	}	
+    
+   // @PostConstruct    
 	public void init() throws Exception{
 				
 		try{
@@ -85,13 +56,13 @@ public class SMSMessageManager {
 		    smppConnection = smppService.makeConnection();
 		}
 		catch(Exception e){
+			e.printStackTrace();
 			logger.error("Error occured while initializing connections, due to: " + e.getMessage());
 	        throw e;
 		}		
-		iniliazed = true;
 	}
 	
-	private void doWork() throws Exception{
+	public void doWork() throws Exception{
 		List<SMSMessage> msgList = null;
 		try {            
       		logger.trace("********** Get message list ***********");
@@ -101,6 +72,7 @@ public class SMSMessageManager {
     	    processMessage(msgList);
       	}
     	catch(Exception e){
+    		e.printStackTrace();
     		logger.error("Exception occured : " + e.getMessage());
     	    throw e;	
     	}    	
@@ -111,20 +83,24 @@ public class SMSMessageManager {
 		return dbService.getSMSMessageList(messageType);		
 	}
 
-   public void processMessage(List<SMSMessage> smsList) throws Exception{			
+    private void processMessage(List<SMSMessage> smsList) throws Exception{			
 		String messageId = null;				
 		int messageSentCounter = 0;		
 	    try { 
-		    for( int j = 0; j < smsList.size(); j++ ) {
-		        //String messageBlockingSOC = "";
-				try {
+		    //for( int j = 0; j < smsList.size(); j++ ) {
+	    	for(int j=0; j< 3; j++){
+	    		logger.debug("j = "+ j);
+	    	    //String messageBlockingSOC = "";
+	    	    try {
 			    	if(!smppConnection.isBound()){ // smpp connection is unbound, need to bind
 				       SMPPService.bind(smppConnection);
 			        }
-				    messageId = sendRequest(smsList.get(j).getDestinationAddress(), smsList.get(j).getMessage());
-			        logger.info("Message was sent out successfully to: " + smsList.get(j).getDestinationAddress());
+				    //messageId = sendRequest(smsList.get(j).getDestinationAddress(), smsList.get(j).getMessage());
+			    	messageId = sendRequest("2132566431", "test sms message");
+			   //     logger.info("Message was sent out successfully to: " + smsList.get(j).getDestinationAddress());
 			    }
 			    catch(Exception e){
+			    	 e.printStackTrace();
 				     logger.error("Exception occured in processMessage(): " + e.getMessage());
 				     if( j == smsList.size() - 1 )			
 					     throw e;
@@ -148,9 +124,7 @@ public class SMSMessageManager {
 			ie.omk.smpp.Address destAddress = new ie.omk.smpp.Address();
 			ie.omk.smpp.Address sendAddress = new ie.omk.smpp.Address();
 			
-			destAddress.setAddress(phoneNumber);
-			//for test
-			//destAddress.setAddress("2132566431");			
+			destAddress.setAddress(phoneNumber);						
 			sendAddress.setTON(0);
 			sendAddress.setNPI(0);
 			sendAddress.setAddress(SMPPService.getShortCode());
@@ -182,36 +156,13 @@ public class SMSMessageManager {
 			logger.error("!!Error sending request!! due to:  " + e.getMessage());
 			throw e;
 		}
+		logger.info("Message was sent out successfully to: " + phoneNumber);
+		
 		return retValue;
-	}
-		
-	private static AlertAction determineAction(String args[]) throws Exception{
-		int code = -1;
-		AlertAction type = null;
-		
-		if(args != null && args.length > 0){ 		
-		   try{	
-		       code = Integer.parseInt(args[0]);
-		   }
-		   catch(NumberFormatException nfe){
-			   throw new Exception("NumberFormatException occured processing input action code: " + nfe.getMessage());
-		   }
-		   
-		   for(AlertAction aa : AlertAction.values()){
-			   if(code == aa.getActionCode()) {
-			      type = aa;	
-			      break;
-			   }   
-		   }
-		}  
-		 if(type == null)
-		      throw new Exception("Error with the input action code: " + args[0] +", Please enter a valid numeric value as the action code");
-		 else
-		     return type;
 	}	
 	
 	//@PreDestroy
-    private void cleanUp() {
+    public void cleanUp() {
     	logger.trace("********** CleanUp **********");    
 		SMPPService.releaseConnection(smppConnection);
 	}	
