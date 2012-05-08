@@ -1,13 +1,6 @@
 package com.tscp.mvno.smpp;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.tscp.mvno.smpp.manager.SMSMessageManager;
-import com.tscp.mvno.smpp.service.DatabaseService;
-import com.tscp.mvno.smpp.service.LoggingService;
-import com.tscp.mvno.smpp.service.SMPPService;
 
 public class SMSClient {
 	
@@ -66,5 +59,4 @@ public class SMSClient {
 		   return type;
 	   }	   
    }	
-
 }

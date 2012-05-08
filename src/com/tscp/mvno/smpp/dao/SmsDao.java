@@ -21,6 +21,7 @@ public class SmsDao extends HibernateDaoSupport {
 
 	@Autowired
 	private LoggingService logger;
+	
 	@Autowired
 	public void init(HibernateTemplate hibernateTemplate) {
 	   setHibernateTemplate(hibernateTemplate);

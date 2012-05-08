@@ -13,14 +13,14 @@
     <param name="maxBackupIndex" value="20" />
     <param name="append" value="true" />
     <param name="encoding" value="UTF-8" />
-    <!-- <param name="File" value="/apps/home/appadmin/telscape/projects/SMSMessageApp/logs/sms.log" />-->
-    <param name="File" value="./logs/smsMessage.log" />
+    <param name="File" value="/apps/home/appadmin/telscape/projects/SMSMessageApp/logs/sms.log" />
+    <!-- <param name="File" value="./logs/smsMessage.log" />-->
     <layout class="org.apache.log4j.PatternLayout">
       <param name="ConversionPattern" value="%d{ISO8601} %5p %c{1}: %m%n" />
     </layout>
   </appender>
   <logger name="SMSMessageProcessorLogger">
-    <level value="ALL" />
+    <level value="INFO" />
     <appender-ref ref="SMSMessageProcessorAppender" />
   </logger>
   <root>

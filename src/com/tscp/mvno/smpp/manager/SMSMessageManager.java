@@ -1,6 +1,5 @@
 package com.tscp.mvno.smpp.manager;
 
-import ie.omk.smpp.Connection;
 import ie.omk.smpp.message.SMPPResponse;
 import ie.omk.smpp.message.SubmitSM;
 
@@ -12,7 +11,6 @@ import javax.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.stereotype.Component;
 
 import com.tscp.mvno.smpp.AlertAction;
 import com.tscp.mvno.smpp.domain.SMSMessage;
@@ -32,28 +30,21 @@ public class SMSMessageManager {
 	@Autowired
 	private LoggingService logger;
 	
-	private Connection smppConnection;
-			
 	public SMSMessageManager() {		
 	}
 	
 	public SMSMessageManager(AlertAction messageType) {
 		this.messageType = messageType;
-	}
-		
-	public void setMessageType(AlertAction messageType) {
-		this.messageType = messageType;
-	}	
+	}		
     
-   // @PostConstruct    
+    @PostConstruct    
 	public void init() throws Exception{
 				
 		try{
-		    ApplicationContext appCtx = new ClassPathXmlApplicationContext("application-context.xml");		    
-		    dbService = (DatabaseService)appCtx.getBean("databaseService");	
-		    smppService = (SMPPService)appCtx.getBean("smppService");
+		    ApplicationContext appCtx = new ClassPathXmlApplicationContext("application-context.xml");	
 		    logger = (LoggingService)appCtx.getBean("loggingService");
-		    smppConnection = smppService.makeConnection();
+		    dbService = (DatabaseService)appCtx.getBean("databaseService");	
+		    smppService = (SMPPService)appCtx.getBean("smppService");		   
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -87,17 +78,11 @@ public class SMSMessageManager {
 		String messageId = null;				
 		int messageSentCounter = 0;		
 	    try { 
-		    //for( int j = 0; j < smsList.size(); j++ ) {
-	    	for(int j=0; j< 3; j++){
-	    		logger.debug("j = "+ j);
-	    	    //String messageBlockingSOC = "";
+		    for(int j = 0; j < smsList.size(); j++ ) {
 	    	    try {
-			    	if(!smppConnection.isBound()){ // smpp connection is unbound, need to bind
-				       SMPPService.bind(smppConnection);
-			        }
-				    //messageId = sendRequest(smsList.get(j).getDestinationAddress(), smsList.get(j).getMessage());
-			    	messageId = sendRequest("2132566431", "test sms message");
-			   //     logger.info("Message was sent out successfully to: " + smsList.get(j).getDestinationAddress());
+	    	    	smppService.bind();	    	   
+				    messageId = sendRequest(smsList.get(j).getDestinationAddress(), smsList.get(j).getMessage());
+			        logger.info("Message was sent out successfully to: " + smsList.get(j).getDestinationAddress());
 			    }
 			    catch(Exception e){
 			    	 e.printStackTrace();
@@ -110,7 +95,7 @@ public class SMSMessageManager {
 		 }
 	     finally{
 			//once we're done traversing the list of pending SMS messages, we want to unbind our connection.
-	    	 SMPPService.unbind(smppConnection);
+	    	 smppService.unbind();
 		}
 		logger.info("Total number of the destinations being sent to the messages = " + messageSentCounter);
 	}
@@ -119,7 +104,6 @@ public class SMSMessageManager {
 		
 		String retValue = null;
 		try {
-//			SMPPRequest smppRequest;
 			ie.omk.smpp.message.SubmitSM shortMsg = new SubmitSM();
 			ie.omk.smpp.Address destAddress = new ie.omk.smpp.Address();
 			ie.omk.smpp.Address sendAddress = new ie.omk.smpp.Address();
@@ -138,7 +122,7 @@ public class SMSMessageManager {
 			logger.info("SMPPRequest Dest Address     = "+shortMsg.getDestination().getAddress());
 			logger.info("SMPPRequest Message Text     = "+shortMsg.getMessageText());
 		
-			SMPPResponse smppResponse = smppConnection.sendRequest(shortMsg);
+			SMPPResponse smppResponse = smppService.sendRequest(shortMsg);
 			
 			if( smppResponse != null ) {
 				logger.info("------ SMPPResponse -------");
@@ -164,6 +148,6 @@ public class SMSMessageManager {
 	//@PreDestroy
     public void cleanUp() {
     	logger.trace("********** CleanUp **********");    
-		SMPPService.releaseConnection(smppConnection);
+    	smppService.releaseConnection();
 	}	
 }

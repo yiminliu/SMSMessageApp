@@ -2,13 +2,17 @@ package com.tscp.mvno.smpp.service;
 
 import ie.omk.smpp.Connection;
 import ie.omk.smpp.message.BindResp;
+import ie.omk.smpp.message.SMPPResponse;
+import ie.omk.smpp.message.SubmitSM;
 import ie.omk.smpp.net.TcpLink;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +25,8 @@ import org.springframework.stereotype.Service;
 @Service("smppService")
 public class SMPPService {
  
-public static String inputProperties = "client.properties";
-			
+    public static String inputProperties = "client.properties";
+	   
 	private static String		sprintSmscSite;
 	private static int			sprintSmscPort;		
 	private static String		telscapeUserName;
@@ -30,13 +34,26 @@ public static String inputProperties = "client.properties";
 	private static String		systemType;
 	private static int			maximumMessageCount;
 	private static String 		shortCode;
-	private static LoggingService logger = new LoggingService();
+	
+    //@Autowired
+    private LoggingService logger = new LoggingService();
+    	    
+	private Connection 	smppConnection = null;
 		
-	static  {
-		init();
-	}
 			
-	private static void init() {
+	SMPPService() throws Exception{
+		
+		init();
+		
+		try {
+		    smppConnection = makeConnection();
+		}
+		catch(Exception e) {
+			throw e;
+		}
+	}
+	
+	private void init() {
 		try {
 			Properties props = new Properties();
 			ClassLoader cl = SMPPService.class.getClassLoader();
@@ -46,15 +63,13 @@ public static String inputProperties = "client.properties";
 			   props.load(in);
 			}
 			
-			//sprintSmscSite 		= props.getProperty("SMSC.URL", "http://68.28.216.140/");
-			//for test
-			sprintSmscSite 		= props.getProperty("SMSC.URL", "63.168.232.135");
+			sprintSmscSite 		= props.getProperty("SMSC.URL", "68.28.216.140");
 		    sprintSmscPort 		= Integer.parseInt(props.getProperty("SMSC.PORT", "16910"));
 		    telscapeUserName	= props.getProperty("TSCP.USERNAME", "tscp");
 		    telscapePassword	= props.getProperty("TSCP.PASSWORD", "tscp2008");
 		    systemType			= props.getProperty("SYSTEM.TYPE", "systype");
 		    maximumMessageCount	= Integer.parseInt(props.getProperty("MESSAGE.MAXIMUM","100"));
-		    shortCode			= props.getProperty("SHORT.CODE", "87276");		    
+		    shortCode			= props.getProperty("SHORT.CODE", "87276");			    
 		} catch( Exception e ) {
 			logger.info("Error loading properties file!! due to: " + e.getMessage());			
 		}
@@ -62,8 +77,7 @@ public static String inputProperties = "client.properties";
 	
 	public Connection makeConnection() throws UnknownHostException, Exception{
 				
-		TcpLink		tcpLink = null;
-		Connection 	smppConnection = null;
+		TcpLink		tcpLink = null;	
 		
 		logger.info("Connecting to SMSC...");
 		
@@ -82,7 +96,7 @@ public static String inputProperties = "client.properties";
 		    logger.info("SMPP Connection established"); //0-UNBOUND, 1-BINDING, 2-BOUND
 		}
 	    catch(Exception e ) {
-	    	releaseConnection(smppConnection);
+	    	releaseConnection();
 		    logger.error("Exception occured during connecting to SMSC server, due to: " + e.getMessage());
 		    throw e;
 	    }		
@@ -104,15 +118,16 @@ public static String inputProperties = "client.properties";
 	 * </p>
 	 * @return
 	 */
-	public static boolean bind(Connection smppConnection) throws Exception{
+	//public static boolean bind(Connection smppConnection) throws Exception{
+	public boolean bind() throws Exception{
 		boolean retValue = false;
 		logger.info("**** Binding SMPP Connection ****");
 		try {
-//			BindResp response = new BindResp();
 			if( !smppConnection.isBound() ) {
 								
 				BindResp response = null;
-				try{
+			
+				try{				   	
 				   response = smppConnection.bind(Connection.TRANSMITTER, telscapeUserName, telscapePassword, systemType);
 				}
 				catch(Exception e){
@@ -130,13 +145,14 @@ public static String inputProperties = "client.properties";
 			retValue = true;
 		} catch ( Exception e ) {
 			logger.error("!!Binding Exception Occurred, due to: " + e.getMessage());
-			releaseConnection(smppConnection);
+			releaseConnection();
 			throw e;
 		} 
 		return retValue;
 	}
 	
-	public static boolean unbind(Connection smppConnection) { 
+	//public static boolean unbind(Connection smppConnection) { 
+	public boolean unbind() { 
 		boolean retValue = false;
 		try {
 			if( smppConnection.isBound() ) {
@@ -154,7 +170,12 @@ public static String inputProperties = "client.properties";
 		return retValue;
 	}
 	
-	public static void releaseConnection(Connection smppConnection) {
+	public SMPPResponse sendRequest(SubmitSM shortMsg) throws SocketTimeoutException, IOException{
+		return smppConnection.sendRequest(shortMsg);
+	}
+	
+	//public static void releaseConnection(Connection smppConnection) {
+	public void releaseConnection() {
 		if( smppConnection != null ) {
 			try {
 				smppConnection.unbind();
@@ -190,26 +211,18 @@ public static String inputProperties = "client.properties";
 	}
 			
 	public static void main ( String[] args ) {
-		logger.info("Testing ConnectionUtil for SMPP project...");
-				
-		//ConnectionUtil connection = new ConnectionUtil();
-		SMPPService ss = new SMPPService();
+		//logger.info("Testing ConnectionUtil for SMPP project...");
+		
 		try {
+		  SMPPService ss = new SMPPService();	
 		  ss.makeConnection();
 		}
 		catch(Exception e){
 			e.printStackTrace();
 			System.exit(1);
-		}
-		
-		logger.info("ConnectionUtil object established.");
-		
-		//logger.info("Config information:");
-		//logger.info("**** ConnectionUtil.getTelscapeUserName()      = "+connection.getTelscapeUserName());
-		//logger.info("**** ConnectionUtil.getTelscapePassword()      = "+connection.getTelscapePassword());
-		//logger.info("**** ConnectionUtil.getSystemType()            = "+connection.getSystemType());
-		//logger.info("**** ConnectionUtil.getMaximumMessageCount()   = "+connection.getMaximumMessageCount());
-		
-		logger.info("Done Testing ConnectionUtil for SMPP Project...Exited normally...");
+		}		
+		//logger.info("ConnectionUtil object established.");
+			
+		//logger.info("Done Testing ConnectionUtil for SMPP Project...Exited normally...");
 	}
 }

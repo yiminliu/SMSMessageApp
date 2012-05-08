@@ -1,20 +1,17 @@
 package com.tscp.mvno.smpp.service;
 
-import java.io.InputStream;
-import java.util.Properties;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.xml.DOMConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-
-@SuppressWarnings("all")
 @Service
 public class LoggingService {
 	
-	private static Log		 logger = LogFactory.getLog("");
-	private static final String	 logConfigFile = "config/log4j.xml";
+	//private static Log		 logger = LogFactory.getLog("");
+	private static Logger logger = LoggerFactory.getLogger("");
+
+	private static final String	 logConfigFile = "./log4j.xml";
 	
 	static{
 		try {
@@ -50,12 +47,8 @@ public class LoggingService {
 		
 	public void error(String message) {
 		logger.error(message);
-	}
-		
-	public void fatal(String message) {
-		logger.fatal(message);
-	}
-
+	}		
+	
 	public void debug(Object obj, String message) {
 		logger.debug(obj.getClass().getName()+": "+ message);
 	}
@@ -93,11 +86,7 @@ public class LoggingService {
 		   logger.error(obj == null? "" : obj.getClass().getName()+"."+ methodName + "(): " + tscpmvneErrorCode + "--" + tscpmvneErrorMessage +". Caused by: "+ causeException.getMessage()); 	
 		else
 			logger.error(obj == null? "" : obj.getClass().getName()+"."+ methodName + "(): " + tscpmvneErrorCode + "--" + tscpmvneErrorMessage); 	
-	}	
-	
-	public void fatal(Object obj, String message) {
-		logger.fatal(message);
-	}
+	}		
 
 }
 

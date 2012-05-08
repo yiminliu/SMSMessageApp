@@ -16,7 +16,7 @@
  <!-- Begin Component Scan --> 
   <context:component-scan base-package="com.tscp.mvno.smpp.dao" />  
   <context:component-scan base-package="com.tscp.mvno.smpp.service" /> 
-  <context:component-scan base-package="com.tscp.mvno.smpp.manager" />
+  <!-- <context:component-scan base-package="com.tscp.mvno.smpp.manager" />-->
   
    <!-- <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">-->
    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
@@ -30,7 +30,7 @@
     <property name="hibernateProperties">
       <props>
         <prop key="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</prop>  
-        <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>    
+        <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
         <prop key="hibernate.show_sql">true</prop>
         <prop key="hibernate.format_sql">true</prop>
         <prop key="hibernate.use_sql_comments">${hibernate.use_sql_comments}</prop>
@@ -47,7 +47,8 @@
   </bean>
   <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
-        <property name="url" value="jdbc:oracle:thin:@uscael200:1521:K11MVNOT"/>
+        <!-- <property name="url" value="jdbc:oracle:thin:@uscael200:1521:K11MVNOT"/>-->
+        <property name="url" value="jdbc:oracle:thin:@USCAELMUX18:1521:K11MVNO"/>
         <property name="username" value="REPORT"/>
         <property name="password" value="REPORTMVNO"/>
   </bean>
